@@ -16,6 +16,10 @@
 ### Changed
 - Actualización automática en develop.
 
+## [1 0 1] - 2026-02-26
+### Changed
+- Actualización automática en develop.
+
 ## [1 0 1] - 2026-02-18
 ### Changed
 - Actualización automática en develop.
