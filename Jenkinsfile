@@ -95,78 +95,75 @@ pipeline {
             }
         }
 
-        stage('Promote app to master') {
-            steps {
-                unstash 'app-code'
-                dir('app') {
-                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                        sh '''
-                            git config user.email "jenkins@ci"
-                            git config user.name "Jenkins CI"
+stage('Promote app to master') {
+    steps {
+        unstash 'app-code'
+        dir('app') {
+            withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                sh '''
+                    git config user.email "jenkins@ci"
+                    git config user.name "Jenkins CI"
 
-                            git checkout develop
-                            git pull origin develop
+                    # 1. Checkout develop SOLO para leer
+                    git checkout develop
+                    git pull origin develop
 
-                            LAST_VERSION=$(grep -oP '^## \\[\\K[0-9]+\\.[0-9]+\\.[0-9]+' CHANGELOG.md | head -n 1)
-                            NEW_VERSION=$(echo $LAST_VERSION | awk -F. '{$NF+=1; OFS="."; print}')
-                            TODAY=$(date +%Y-%m-%d)
+                    # 2. Checkout master
+                    git checkout master
+                    git pull origin master
 
-                            awk -v ver="$NEW_VERSION" -v date="$TODAY" '
-                                NR==1 {print; print ""; print "## [" ver "] - " date; print "### Changed"; print "- Actualización automática en develop."; next}
-                                {print}
-                            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+                    # 3. Merge develop -> master
+                    git merge origin/develop --no-edit || true
 
-                            git add CHANGELOG.md
-                            git commit -m "Update CHANGELOG in develop - version $NEW_VERSION" || true
-
-                            git remote set-url origin https://AlfredoVG77:${GITHUB_TOKEN}@github.com/AlfredoVG77/todo-list-aws-app-multibranch.git
-                            git push origin develop
-
-                            git fetch origin master
-                            git checkout master
-                            git merge origin/develop --no-edit || true
-                            git push origin master
-                        '''
-                    }
-                }
+                    # 4. Push SOLO a master
+                    git remote set-url origin https://AlfredoVG77:${GITHUB_TOKEN}@github.com/AlfredoVG77/todo-list-aws-app-multibranch.git
+                    git push origin master
+                '''
             }
         }
+    }
+}
+stage('Promote settings to master') {
+    steps {
+        unstash 'settings-code'
+        dir('settings') {
+            withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                sh '''
+                    git config user.email "jenkins@ci"
+                    git config user.name "Jenkins CI"
 
-        stage('Promote settings to master') {
-            steps {
-                unstash 'settings-code'
-                dir('settings') {
-                    withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                        sh '''
-                            git config user.email "jenkins@ci"
-                            git config user.name "Jenkins CI"
+                    # 1. Checkout develop SOLO para leer
+                    git checkout develop
+                    git pull origin develop
 
-                            git checkout develop
-                            git pull origin develop
+                    # 2. Checkout master
+                    git checkout master
+                    git pull origin master
 
-                            LAST_VERSION=$(grep -oP '^## \\[\\K[0-9]+\\.[0-9]+\\.[0-9]+' CHANGELOG.md | head -n 1)
-                            NEW_VERSION=$(echo $LAST_VERSION | awk -F. '{$NF+=1; OFS="."; print}')
-                            TODAY=$(date +%Y-%m-%d)
+                    # 3. Merge develop -> master
+                    git merge origin/develop --no-edit || true
 
-                            awk -v ver="$NEW_VERSION" -v date="$TODAY" '
-                                NR==1 {print; print ""; print "## [" ver "] - " date; print "### Changed"; print "- Actualización automática en develop."; next}
-                                {print}
-                            ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+                    # 4. Actualizar CHANGELOG SOLO en master
+                    LAST_VERSION=$(grep -oP '^## \\[\\K[0-9]+\\.[0-9]+\\.[0-9]+' CHANGELOG.md | head -n 1)
+                    NEW_VERSION=$(echo $LAST_VERSION | awk -F. '{$NF+=1; OFS="."; print}')
+                    TODAY=$(date +%Y-%m-%d)
 
-                            git add CHANGELOG.md
-                            git commit -m "Update CHANGELOG in develop - version $NEW_VERSION" || true
+                    awk -v ver="$NEW_VERSION" -v date="$TODAY" '
+                        NR==1 {print; print ""; print "## [" ver "] - " date; print "### Changed"; print "- Promoción automática a master."; next}
+                        {print}
+                    ' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
 
-                            git remote set-url origin https://AlfredoVG77:${GITHUB_TOKEN}@github.com/AlfredoVG77/todo-list-aws-settings-multibranch.git
-                            git push origin develop
+                    git add CHANGELOG.md
+                    git commit -m "Promoción automática settings - versión $NEW_VERSION" || true
 
-                            git fetch origin master
-                            git checkout master
-                            git merge origin/develop --no-edit || true
-                            git push origin master
-                        '''
-                    }
-                }
+                    # 5. Push SOLO a master
+                    git remote set-url origin https://AlfredoVG77:${GITHUB_TOKEN}@github.com/AlfredoVG77/todo-list-aws-settings-multibranch.git
+                    git push origin master
+                '''
             }
         }
+    }
+}
+
     }
 }
