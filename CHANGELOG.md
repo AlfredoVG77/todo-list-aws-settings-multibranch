@@ -2,6 +2,10 @@
 
 ## [1 0 1] - 2026-02-27
 ### Changed
+- Promoción automática a master.
+
+## [1 0 1] - 2026-02-27
+### Changed
 - Actualización automática en develop.
 
 ## [1 0 1] - 2026-02-26
