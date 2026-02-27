@@ -6,6 +6,14 @@
 
 ## [1 0 1] - 2026-02-27
 ### Changed
+<<<<<<< HEAD
+- Promoción automática a master.
+=======
+- Actualización manual en develop.
+>>>>>>> origin/develop
+
+## [1 0 1] - 2026-02-27
+### Changed
 - Actualización automática en develop.
 
 ## [1 0 1] - 2026-02-26
