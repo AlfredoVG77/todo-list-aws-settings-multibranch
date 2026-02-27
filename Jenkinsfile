@@ -104,18 +104,17 @@ stage('Promote app to master') {
                     git config user.email "jenkins@ci"
                     git config user.name "Jenkins CI"
 
-                    # 1. Checkout develop SOLO para leer
                     git checkout develop
                     git pull origin develop
 
-                    # 2. Checkout master
                     git checkout master
                     git pull origin master
 
-                    # 3. Merge develop -> master
+                    # Evitar conflicto del Jenkinsfile
+                    git checkout origin/master -- Jenkinsfile
+
                     git merge origin/develop --no-edit || true
 
-                    # 4. Push SOLO a master
                     git remote set-url origin https://AlfredoVG77:${GITHUB_TOKEN}@github.com/AlfredoVG77/todo-list-aws-app-multibranch.git
                     git push origin master
                 '''
@@ -132,18 +131,18 @@ stage('Promote settings to master') {
                     git config user.email "jenkins@ci"
                     git config user.name "Jenkins CI"
 
-                    # 1. Checkout develop SOLO para leer
                     git checkout develop
                     git pull origin develop
 
-                    # 2. Checkout master
                     git checkout master
                     git pull origin master
 
-                    # 3. Merge develop -> master
+                    # Evitar conflicto del Jenkinsfile
+                    git checkout origin/master -- Jenkinsfile
+
                     git merge origin/develop --no-edit || true
 
-                    # 4. Actualizar CHANGELOG SOLO en master
+                    # Actualizar CHANGELOG SOLO en master
                     LAST_VERSION=$(grep -oP '^## \\[\\K[0-9]+\\.[0-9]+\\.[0-9]+' CHANGELOG.md | head -n 1)
                     NEW_VERSION=$(echo $LAST_VERSION | awk -F. '{$NF+=1; OFS="."; print}')
                     TODAY=$(date +%Y-%m-%d)
@@ -156,7 +155,6 @@ stage('Promote settings to master') {
                     git add CHANGELOG.md
                     git commit -m "Promoción automática settings - versión $NEW_VERSION" || true
 
-                    # 5. Push SOLO a master
                     git remote set-url origin https://AlfredoVG77:${GITHUB_TOKEN}@github.com/AlfredoVG77/todo-list-aws-settings-multibranch.git
                     git push origin master
                 '''
